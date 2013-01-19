@@ -1,0 +1,101 @@
+Synopsis
+---------
+Tiger Mapping and Routing Server (TMRS) is being written in order to facilitate the creation of open source GPS navigation software.  Its goal is to simplify street level routing and map drawing functions essential for developing user-friendly interfaces. The data used in this software is available freely from U.S. Census and is called 'Tiger'.   
+
+TMRS will be written in C with no platform-specific dependencies.  It should work on most operating systems even though the development will be done in Linux.  Its design will be dictated by the resource constraints of embedded systems.  It strives to achieve low storage and memory requirements.
+
+There are two services that will be provided by TMRS - 
+
+1.  Street Routing - in this function, the client provides a start and a destination address.  The server computes the best path between the two points and returns driving directions.
+
+2.  Map Server - given a GPS coordinate and area in square miles, the server will return a bitmap that can be used by other applications for a visual display of the area.
+
+In addition to above, a utility program for compressing Tiger Map data will also be created.  
+
+
+Installation
+-------------
+
+TRMS makes use of the following libraries:
+
+1)  libgd
+2)  libz
+3)  libpng
+4)  libfreetype
+
+Here is an output from ldd:
+
+[sumit@europa tmrs]$ ldd tmrs
+        libm.so.6 => /lib/libm.so.6 (0x4001c000)
+        libgd.so.2 => /usr/local/lib/libgd.so.2 (0x4003d000)
+        libpng12.so.0 => /usr/lib/libpng12.so.0 (0x40071000)
+        libc.so.6 => /lib/libc.so.6 (0x40094000)
+        libfreetype.so.6 => /usr/lib/libfreetype.so.6 (0x401b2000)
+        libz.so.1 => /usr/lib/libz.so.1 (0x401fb000)
+        /lib/ld-linux.so.2 => /lib/ld-linux.so.2 (0x40000000)   
+
+If you have the above, it is a simple matter of downloading the source code and typing 'make' to compile. This will create two executables:  tmrs and rt1compress.
+
+
+Quick Start
+-----------
+
+In order to perform a quick test, do the following:
+
+1)  Download tmrs.tar.gz into your home directory (called /home/user, for example)
+2)  tar xvzf tmrs.tar.gz
+3)  cd /home/user/tmrs/src
+4)  make
+
+At this point, you should have two executables: 'tmrs' and 'rt1compress'.  The next steps involve downloading and processing Tiger data.
+
+5)  mkdir /home/user/tmrs/data
+6)  Download the data file for Hillsborough County, FL: 
+      http://www2.census.gov/geo/tiger/tiger2002/FL/TGR12057.ZIP
+7)  Unzip TGR12057.RT1 and TGR12057.RT2 into /home/user/tmrs/data/
+8)  Run /home/user/tmrs/src/rt1compress.  This will create three files: segments.dat, shapes.dat and names.dat
+
+[sumit@europa data]$ ../src/rt1compress
+
+Compressing: TGR12057.RT2 --> temp.dat
+---------------------------------------------
+Length of input file                           = 3984960 bytes
+Number of records                              = 18976
+Length of output file                          = 696052 bytes
+Unique Chains                                  = 16655
+---------------------------------------------
+
+Processing: TGR12057.RT1 --> segments/names/chains
+-----------------------------------------------
+Length of input file                           = 15865170 bytes
+Number of records                              = 68979
+Segments output to file                = 63510
+-----------------------------------------------
+
+Summary
+------------------------------------------------
+Number of segments             = 63510,        2794440 bytes
+Number of shape entries        = 15210,        583900 bytes
+Unique street names            = 13664,        519232 bytes
+------------------------------------------------
+
+9)  You are now ready to perform some basic tests.  Let's get the coordinates for University of South Florida.  The postal address of USF is 
+
+4202 E. Fowler Ave.
+Tampa, FL 33620
+        
+[sumit@europa src]$ ./tmrs -d ../data -a 4202,E,Fowler,Ave,*
+A:32123:4202 E. Fowler Ave :28054495,-82416015
+        
+10)  Now let's map this area out:
+
+[sumit@europa src]$ ./tmrs -d ../data -m 640,480,90,28054495,-82416015 > map.png
+        
+This should output a PNG image called map.png.  Open this file to see if the map was properly created.
+    
+    
+
+        
+    
+    
+
